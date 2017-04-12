@@ -1,0 +1,10 @@
+name: PointsCommands
+main: top.mymoe.pointscommands.PointsCommands
+version: 1.0.0
+author: GiNYAi
+description: A simple plugin.
+softdepend: [playerpoints]
+commands:
+  PointsCommands:
+    description: The commands of PointsCommands.
+    permission: simplesidebar.command

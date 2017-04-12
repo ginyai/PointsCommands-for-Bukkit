@@ -1,0 +1,20 @@
+#You can use [playerpoints]
+PointsPlugin: playerpoints
+PointsCommands:
+ Command1:
+    Points: 666
+    NoPointsMessage: "You don't have enough points to run this command"
+    Permission: ''
+    NoPermissionMessage: "You don't have the permission to run this command"
+    RequiredArgs: 2
+    WrongArgsMessage: "You should use this command: /command1 arg1 arg2"
+    description: 'text command 1'
+    aliases:
+    - 'MyCommand'
+    runcmd:
+    - 'op:yourcommand $arg1 $arg2'
+    - 'console:yourcommand2 $player $multiargs'
+    SuccessMessage: "You have payed to run this cmd"
+ Commandz:
+    permission: permission.z
+    description: 'text command 2'
