@@ -1,5 +1,6 @@
 package top.mymoe.pointscommands;
 
+import org.black_ixx.playerpoints.services.PointsCommand;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -15,7 +16,7 @@ import java.util.Set;
  */
 public class Config {
     private Plugin plugin;
-    private Map<PluginCommand,String> iCommands;
+    private Map<String,PluginCommand> iCommands;
     private FileConfiguration fileConfiguration;
     public Config(Plugin plugin) {
         this.plugin = plugin;
@@ -25,28 +26,34 @@ public class Config {
     public void reload() {
         plugin.reloadConfig();
         this.fileConfiguration=plugin.getConfig();
-        iCommands.clear();
+        Map<String,PluginCommand> tempMap = new HashMap<>();
         try {
             Constructor<?> constructor = PluginCommand.class.getDeclaredConstructor(String.class,Plugin.class);
             constructor.setAccessible(true);
             for(String name:fileConfiguration.getConfigurationSection("PointsCommands").getKeys(false)){
-                PluginCommand command = (PluginCommand) constructor.newInstance(new Object[]{name,plugin});
+                PluginCommand command = null;
+                if(iCommands.containsKey(name)){
+                    command = iCommands.get(name);
+                }else {
+                    command = (PluginCommand) constructor.newInstance(new Object[]{name, plugin});
+                }
                 if(fileConfiguration.getString("PointsCommands."+name+".description")!=null)
                     command.setDescription(fileConfiguration.getString("PointsCommands."+name+".description"));
                 if(fileConfiguration.getStringList("PointsCommands."+name+".aliases")!=null)
                     command.setAliases(fileConfiguration.getStringList("PointsCommands."+name+".aliases"));
-                iCommands.put(command,name);
+                tempMap.put(name,command);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        iCommands = tempMap;
     }
 
     public PointsPlugins getPointsPlugin() {
         return PointsPlugins.valueOf(fileConfiguration.getString("PointsPlugin","playerpoints").toLowerCase());
     }
 
-    public Map<PluginCommand,String> getICommands() {
+    public Map<String,PluginCommand> getICommands() {
         return iCommands;
     }
 

@@ -1,9 +1,9 @@
 name: PointsCommands
 main: top.mymoe.pointscommands.PointsCommands
-version: 1.0.0
+version: 1.0.1
 author: GiNYAi
 description: A simple plugin.
-softdepend: [playerpoints]
+softdepend: [PlayerPoints,PlaceholderAPI]
 commands:
   PointsCommands:
     description: The commands of PointsCommands.

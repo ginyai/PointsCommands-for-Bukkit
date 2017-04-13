@@ -1,5 +1,6 @@
 package top.mymoe.pointscommands;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -23,8 +24,9 @@ public class PointsCommands extends JavaPlugin {
     public static Logger logger;
     public static PointsApi pointsApi;
     public static String name ="PointsCommands";
+    private boolean placeholderAPIenable;
 
-    private Map<PluginCommand,String> commands;
+    private Map<String,PluginCommand> commands;
 
     @Override
     public void onEnable() {
@@ -39,6 +41,7 @@ public class PointsCommands extends JavaPlugin {
         pointsApi.reload();
         commands=config.getICommands();
         registerCommands();
+        placeholderAPIenable =this.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI");
     }
 
     @Override
@@ -69,15 +72,21 @@ public class PointsCommands extends JavaPlugin {
             }
             return true;
         }
-        if(commands.containsKey(command)){
-            String name = commands.get(command);
+        if(commands.containsValue(command)){
+            if(!(sender instanceof Player)){
+                sender.sendMessage("This command can only be used as a player");
+                return true;
+            }
+            String name = command.getName();
             List<String> runCmds = new LinkedList<>();
             if((config.getRequiredArgs(name) != -1)&&(args.length!=config.getRequiredArgs(name))){
                 sender.sendMessage(config.getCommandMessage(name,"WrongArgsMessage"));
                 return true;
             }
             for (String cmd:config.getCommandRuns(name)){
-                cmd = cmd.replaceAll("$player",sender.getName());
+                if(placeholderAPIenable)
+                    cmd = PlaceholderAPI.setPlaceholders((Player)sender,cmd);
+                cmd = cmd.replaceAll("\\$player",sender.getName());
                 int k = 0;
                 for(int i=0;i<9;i++){
                     if(cmd.contains("$arg"+(i+1))){
@@ -86,7 +95,7 @@ public class PointsCommands extends JavaPlugin {
                             sender.sendMessage(config.getCommandMessage(name,"WrongArgsMessage"));
                             return true;
                         }else {
-                            cmd = cmd.replaceAll("$arg"+(i+1),args[i]);
+                            cmd = cmd.replaceAll("\\$arg"+(i+1),args[i]);
                         }
                     }
                 }
@@ -95,7 +104,7 @@ public class PointsCommands extends JavaPlugin {
                     for(int i=k;i<args.length;i++){
                         multiArgs.append(" "+args[i]);
                     }
-                    cmd = cmd.replaceAll("$multiargs", multiArgs.substring(Math.min(1,multiArgs.length())));
+                    cmd = cmd.replaceAll("\\$multiargs", multiArgs.substring(Math.min(1,multiArgs.length())));
                 }
                 runCmds.add(cmd);
             }
@@ -134,7 +143,7 @@ public class PointsCommands extends JavaPlugin {
             Field field = SimplePluginManager.class.getDeclaredField("commandMap");
             field.setAccessible(true);
             CommandMap commandMap = (CommandMap)field.get(Bukkit.getPluginManager());
-            for(PluginCommand command:commands.keySet()){
+            for(PluginCommand command:commands.values()){
                 if(!command.isRegistered()){
                     commandMap.register(this.name,command);
                 }
