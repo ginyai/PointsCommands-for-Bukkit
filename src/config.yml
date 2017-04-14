@@ -1,20 +1,25 @@
-#You can use [playerpoints]
+#You can use [playerpoints,mcrmb]
 PointsPlugin: playerpoints
+DefaultMessages:
+  NoPointsMessage: "You don't have enough points to run this command"
+  NoPermissionMessage: "You don't have the permission to run this command"
+  WrongArgsMessage: "Wrong usage"
+  SuccessMessage: "You have payed to run this cmd"
 PointsCommands:
- Command1:
-    Points: 666
-    NoPointsMessage: "You don't have enough points to run this command"
-    Permission: ''
-    NoPermissionMessage: "You don't have the permission to run this command"
-    RequiredArgs: 2
-    WrongArgsMessage: "You should use this command: /command1 arg1 arg2"
-    description: 'text command 1'
-    aliases:
-    - 'MyCommand'
-    runcmd:
-    - 'op:yourcommand $arg1 $arg2'
-    - 'console:yourcommand2 $player $multiargs'
-    SuccessMessage: "You have payed to run this cmd"
- Commandz:
-    permission: permission.z
-    description: 'text command 2'
+#  Command1:
+#    Points: 666
+#    NoPointsMessage: "You don't have enough points to run this command"
+#    Permission: ''
+#    NoPermissionMessage: "You don't have the permission to run this command"
+#    RequiredArgs: 2
+#    WrongArgsMessage: "You should use this command: /command1 arg1 arg2"
+#    description: 'text command 1'
+#    aliases:
+#    - 'MyCommand'
+#    runcmd:
+#    - 'op:yourcommand $arg1 $arg2'
+#    - 'console:yourcommand2 $player $multiargs'
+#    SuccessMessage: "You have payed to run this cmd"
+#  Commandz:
+#    permission: permission.z
+#    description: 'text command 2'

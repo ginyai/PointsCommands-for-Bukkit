@@ -22,6 +22,8 @@ public class PointsApi {
             switch (active){
                 case playerpoints:
                     return playerPoints.getAPI().look(player.getUniqueId());
+                case mcrmb:
+                    return com.mcrmb.PayApi.look(player.getName());
                 default:
                     PointsCommands.logger.info("Unknown points plugin hocked");
                     player.sendMessage("Unknown points plugin hocked");
@@ -30,7 +32,7 @@ public class PointsApi {
         return 0
                 ;
     }
-    public boolean take(Player player,int points){
+    public boolean take(Player player,int points,String reason){
         if(this.active == null){
             PointsCommands.logger.info("No points plugin hocked");
             player.sendMessage("No points plugin hocked");
@@ -38,6 +40,8 @@ public class PointsApi {
             switch (active){
                 case playerpoints:
                     return playerPoints.getAPI().take(player.getUniqueId(),points);
+                case mcrmb:
+                    return com.mcrmb.PayApi.Pay(player.getName(),String.valueOf(points),reason,false);
                 default:
                     PointsCommands.logger.info("Unknown points plugin hocked");
                     player.sendMessage("Unknown points plugin hocked");
@@ -46,6 +50,7 @@ public class PointsApi {
         return false;
     }
     public boolean reload(){
+        this.active = null;
         PointsPlugins pointsPlugin = PointsCommands.config.getPointsPlugin();
         if(pointsPlugin==null){
             PointsCommands.logger.info("No points plugin appointed");
@@ -59,6 +64,14 @@ public class PointsApi {
                         PointsCommands.logger.info("Failed to hocked playerpoints");
                     }
                     break;
+                case mcrmb:
+                    if (plugin.getServer().getPluginManager().isPluginEnabled("Mcrmb")){
+                        this.active = PointsPlugins.mcrmb;
+                        PointsCommands.logger.info("Mcrmb found");
+                    }else {
+                        PointsCommands.logger.info("Can not found Mcrmb");
+                    }
+                    break;
                 default:
                     PointsCommands.logger.info("Unknown points plugin appointed");
             }
@@ -66,6 +79,8 @@ public class PointsApi {
         return false;
     }
     private boolean hookPlayerPoints(){
+        if(!plugin.getServer().getPluginManager().isPluginEnabled("PlayerPoints"))
+            return false;
         final Plugin playerPointsPlugin = this.plugin.getServer().getPluginManager().getPlugin("PlayerPoints");
         playerPoints = PlayerPoints.class.cast(playerPointsPlugin);
         return playerPoints != null;

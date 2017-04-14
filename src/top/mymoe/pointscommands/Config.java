@@ -58,7 +58,7 @@ public class Config {
     }
 
     public String getCommandMessage(String name,String key){
-        return fileConfiguration.getString("PointsCommands."+name+"."+key,key);
+        return fileConfiguration.getString("PointsCommands."+name+"."+key,fileConfiguration.getString("DefaultMessages."+key,key));
     }
 
     public int getPoints(String name) {
@@ -71,5 +71,9 @@ public class Config {
 
     public List<String> getCommandRuns(String name){
         return fileConfiguration.getStringList("PointsCommands."+name+".runcmd");
+    }
+
+    public String getCommandPermission(String name) {
+        return fileConfiguration.getString("PointsCommands."+name+".Permission");
     }
 }

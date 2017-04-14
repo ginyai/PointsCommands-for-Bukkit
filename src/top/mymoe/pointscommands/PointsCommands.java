@@ -51,6 +51,7 @@ public class PointsCommands extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        sender.sendMessage(sender.toString()+command.toString()+label+args.toString());
         if(command.getName().equalsIgnoreCase("PointsCommands")){
             if(sender.hasPermission("pointscommands.commands")){
                 if(args.length==0){
@@ -78,11 +79,14 @@ public class PointsCommands extends JavaPlugin {
                 return true;
             }
             String name = command.getName();
-            List<String> runCmds = new LinkedList<>();
+            if(!sender.hasPermission(config.getCommandPermission(name))){
+                sender.sendMessage(config.getCommandMessage(name,"NoPermissionMessage"));
+            }
             if((config.getRequiredArgs(name) != -1)&&(args.length!=config.getRequiredArgs(name))){
                 sender.sendMessage(config.getCommandMessage(name,"WrongArgsMessage"));
                 return true;
             }
+            List<String> runCmds = new LinkedList<>();
             for (String cmd:config.getCommandRuns(name)){
                 if(placeholderAPIenable)
                     cmd = PlaceholderAPI.setPlaceholders((Player)sender,cmd);
@@ -109,7 +113,7 @@ public class PointsCommands extends JavaPlugin {
                 runCmds.add(cmd);
             }
             if(config.getPoints(name)!=0){
-                if(!pointsApi.take((Player)sender,config.getPoints(name))) {
+                if(!pointsApi.take((Player)sender,config.getPoints(name),command.getName())) {
                     sender.sendMessage(config.getCommandMessage(name, "NoPointsMessage"));
                     return true;
                 }
