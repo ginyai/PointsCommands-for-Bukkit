@@ -74,6 +74,6 @@ public class Config {
     }
 
     public String getCommandPermission(String name) {
-        return fileConfiguration.getString("PointsCommands."+name+".Permission");
+        return fileConfiguration.getString("PointsCommands."+name+".Permission","");
     }
 }

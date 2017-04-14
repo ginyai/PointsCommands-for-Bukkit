@@ -51,7 +51,6 @@ public class PointsCommands extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        sender.sendMessage(sender.toString()+command.toString()+label+args.toString());
         if(command.getName().equalsIgnoreCase("PointsCommands")){
             if(sender.hasPermission("pointscommands.commands")){
                 if(args.length==0){
@@ -79,8 +78,10 @@ public class PointsCommands extends JavaPlugin {
                 return true;
             }
             String name = command.getName();
-            if(!sender.hasPermission(config.getCommandPermission(name))){
+            if(!(config.getCommandPermission(name).equalsIgnoreCase("")||sender.hasPermission(config.getCommandPermission(name)))){
+                sender.sendMessage("["+config.getCommandPermission(name)+"]");
                 sender.sendMessage(config.getCommandMessage(name,"NoPermissionMessage"));
+                return true;
             }
             if((config.getRequiredArgs(name) != -1)&&(args.length!=config.getRequiredArgs(name))){
                 sender.sendMessage(config.getCommandMessage(name,"WrongArgsMessage"));
