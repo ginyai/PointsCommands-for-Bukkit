@@ -77,45 +77,27 @@ public class PointsCommands extends JavaPlugin {
                 sender.sendMessage("This command can only be used as a player");
                 return true;
             }
-            String name = command.getName();
-            if(!(config.getCommandPermission(name).equalsIgnoreCase("")||sender.hasPermission(config.getCommandPermission(name)))){
-                sender.sendMessage("["+config.getCommandPermission(name)+"]");
-                sender.sendMessage(config.getCommandMessage(name,"NoPermissionMessage"));
+            String commandName = command.getName();
+            if(!(config.getCommandPermission(commandName).equalsIgnoreCase("")||sender.hasPermission(config.getCommandPermission(commandName)))){
+                sender.sendMessage(getFormat(config.getCommandMessage(commandName,"NoPermissionMessage"),(Player)sender,commandName,args));
                 return true;
             }
-            if((config.getRequiredArgs(name) != -1)&&(args.length!=config.getRequiredArgs(name))){
-                sender.sendMessage(config.getCommandMessage(name,"WrongArgsMessage"));
+            if((config.getRequiredArgs(commandName) != -1)&&(args.length!=config.getRequiredArgs(commandName))){
+                sender.sendMessage(getFormat(config.getCommandMessage(commandName,"WrongArgsMessage"),(Player)sender,commandName,args));
                 return true;
             }
             List<String> runCmds = new LinkedList<>();
-            for (String cmd:config.getCommandRuns(name)){
-                if(placeholderAPIenable)
-                    cmd = PlaceholderAPI.setPlaceholders((Player)sender,cmd);
-                cmd = cmd.replaceAll("\\$player",sender.getName());
-                int k = 0;
-                for(int i=0;i<9;i++){
-                    if(cmd.contains("$arg"+(i+1))){
-                        k=i;
-                        if(args.length+1<i){
-                            sender.sendMessage(config.getCommandMessage(name,"WrongArgsMessage"));
-                            return true;
-                        }else {
-                            cmd = cmd.replaceAll("\\$arg"+(i+1),args[i]);
-                        }
-                    }
+            for (String cmd:config.getCommandRuns(commandName)){
+                cmd = getFormat(cmd,(Player)sender,commandName,args);
+                if(cmd == null){
+                    sender.sendMessage(getFormat(config.getCommandMessage(commandName,"WrongArgsMessage"),(Player)sender,commandName,args));
+                }else {
+                    runCmds.add(cmd);
                 }
-                if(cmd.contains("$multiargs")){
-                    StringBuffer multiArgs = new StringBuffer();
-                    for(int i=k;i<args.length;i++){
-                        multiArgs.append(" "+args[i]);
-                    }
-                    cmd = cmd.replaceAll("\\$multiargs", multiArgs.substring(Math.min(1,multiArgs.length())));
-                }
-                runCmds.add(cmd);
             }
-            if(config.getPoints(name)!=0){
-                if(!pointsApi.take((Player)sender,config.getPoints(name),command.getName())) {
-                    sender.sendMessage(config.getCommandMessage(name, "NoPointsMessage"));
+            if(config.getPoints(commandName)!=0){
+                if(!pointsApi.take((Player)sender,config.getPoints(commandName),command.getName())) {
+                    sender.sendMessage(getFormat(config.getCommandMessage(commandName, "NoPointsMessage"),(Player)sender,commandName,args));
                     return true;
                 }
             }
@@ -133,7 +115,7 @@ public class PointsCommands extends JavaPlugin {
                     ((Player)sender).chat("/"+cmd);
                 }
             }
-            sender.sendMessage(config.getCommandMessage(name,"SuccessMessage"));
+            sender.sendMessage(getFormat(config.getCommandMessage(commandName,"SuccessMessage"),(Player)sender,commandName,args));
             return true;
         }
         return false;
@@ -156,6 +138,32 @@ public class PointsCommands extends JavaPlugin {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    private String getFormat(String string,Player player,String commandName,String[] args){
+        if(placeholderAPIenable)
+            string = PlaceholderAPI.setPlaceholders(player,string);
+        string = string.replaceAll("\\$player",player.getName());
+        string = string.replaceAll("\\$points",String.valueOf(config.getPoints(commandName)));
+        int k = 0;
+        for(int i=0;i<9;i++){
+            if(string.contains("$arg"+(i+1))){
+                k=i;
+                if(args.length+1<i){
+                    return null;
+                }else {
+                    string = string.replaceAll("\\$arg"+(i+1),args[i]);
+                }
+            }
+        }
+        if(string.contains("$multiargs")){
+            StringBuffer multiArgs = new StringBuffer();
+            for(int i=k;i<args.length;i++){
+                multiArgs.append(" "+args[i]);
+            }
+            string = string.replaceAll("\\$multiargs", multiArgs.substring(Math.min(1,multiArgs.length())));
+        }
+        return string;
     }
 
 }
