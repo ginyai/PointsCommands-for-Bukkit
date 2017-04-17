@@ -27,6 +27,8 @@ public class PointsCommands extends JavaPlugin {
     private boolean placeholderAPIenable;
 
     private Map<String,PluginCommand> commands;
+    private Map<Player,UnconfirmedCommand> unconfirmedCommands;
+    private PluginCommand confirmedCommand;
 
     @Override
     public void onEnable() {
@@ -39,7 +41,9 @@ public class PointsCommands extends JavaPlugin {
         if(pointsApi == null)
             pointsApi = new PointsApi(this);
         pointsApi.reload();
-        commands=config.getICommands();
+        commands = config.getICommands();
+        confirmedCommand = config.getConfirmCommand();
+
         registerCommands();
         placeholderAPIenable =this.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI");
     }
@@ -65,6 +69,7 @@ public class PointsCommands extends JavaPlugin {
                     config.reload();
                     pointsApi.reload();
                     commands=config.getICommands();
+                    confirmedCommand=config.getConfirmCommand();
                     registerCommands();
                     sender.sendMessage("PointsCommands reloaded.");
                     return true;
@@ -91,31 +96,36 @@ public class PointsCommands extends JavaPlugin {
                 cmd = getFormat(cmd,(Player)sender,commandName,args);
                 if(cmd == null){
                     sender.sendMessage(getFormat(config.getCommandMessage(commandName,"WrongArgsMessage"),(Player)sender,commandName,args));
+                    return true;
                 }else {
                     runCmds.add(cmd);
                 }
             }
             if(config.getPoints(commandName)!=0){
-                if(!pointsApi.take((Player)sender,config.getPoints(commandName),command.getName())) {
+                if(pointsApi.look((Player)sender) < config.getPoints(commandName)) {
                     sender.sendMessage(getFormat(config.getCommandMessage(commandName, "NoPointsMessage"),(Player)sender,commandName,args));
                     return true;
                 }
             }
-            for (String cmd:runCmds){
-                if(cmd.startsWith("op:")){
-                    cmd = cmd.replaceFirst("op:","");
-                    boolean opSet = sender.isOp();
-                    sender.setOp(true);
-                    ((Player)sender).chat("/"+cmd);
-                    sender.setOp(opSet);
-                }else if(cmd.startsWith("console:")){
-                    cmd = cmd.replaceFirst("console:","");
-                    this.getServer().dispatchCommand(this.getServer().getConsoleSender(),cmd);
-                }else{
-                    ((Player)sender).chat("/"+cmd);
-                }
+            UnconfirmedCommand unconfirmedCommand = new UnconfirmedCommand(System.currentTimeMillis(),commandName,runCmds,args,(Player)sender);
+            if(config.isConfirmCommands()){
+                unconfirmedCommands.put((Player)sender,unconfirmedCommand);
+            }else {
+                unconfirmedCommand.run();
             }
-            sender.sendMessage(getFormat(config.getCommandMessage(commandName,"SuccessMessage"),(Player)sender,commandName,args));
+            return true;
+        }
+        if(command == confirmedCommand){
+            if(!(sender instanceof Player)){
+            sender.sendMessage("This command can only be used as a player");
+            return true;
+           }
+            UnconfirmedCommand unconfirmedCommand = unconfirmedCommands.get((Player)sender);
+            if(unconfirmedCommand==null||unconfirmedCommand.time+config.getConfirmTime()*1000<System.currentTimeMillis()){
+                sender.sendMessage(config.getCommandMessage("","NoUnconfirmCommands"));
+            }else {
+                unconfirmedCommand.run();
+            }
             return true;
         }
         return false;
@@ -165,5 +175,43 @@ public class PointsCommands extends JavaPlugin {
         }
         return string;
     }
-
+    private class UnconfirmedCommand{
+        private long time;
+        private String commandName;
+        private List<String> cmds;
+        private String[] args;
+        private Player player;
+        UnconfirmedCommand(long time,String commandName,List<String> cmds,String[] args,Player player){
+            this.commandName =commandName;
+            this.time =time;
+            this.cmds = cmds;
+            this.player = player;
+        }
+        protected void run(){
+            if(config.getPoints(commandName)!=0){
+                if(!pointsApi.take(player,config.getPoints(commandName),commandName)) {
+                    player.sendMessage(getFormat(config.getCommandMessage(commandName, "NoPointsMessage"),player,commandName,args));
+                    return ;
+                }
+            }
+            for (String cmd:cmds){
+                if(cmd.startsWith("op:")){
+                    cmd = cmd.replaceFirst("op:","");
+                    boolean opSet = player.isOp();
+                    player.setOp(true);
+                    player.chat("/"+cmd);
+                    player.setOp(opSet);
+                }else if(cmd.startsWith("console:")){
+                    cmd = cmd.replaceFirst("console:","");
+                    plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(),cmd);
+                }else{
+                    player.chat("/"+cmd);
+                }
+            }
+            player.sendMessage(getFormat(config.getCommandMessage(commandName,"SuccessMessage"),player,commandName,args));
+        }
+        protected String getCommandName() {
+            return commandName;
+        }
+    }
 }

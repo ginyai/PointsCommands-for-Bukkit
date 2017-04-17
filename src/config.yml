@@ -1,10 +1,14 @@
 #You can use [playerpoints,mcrmb]
 PointsPlugin: playerpoints
+ConfirmCommands: true
+ConfirmTime: 30
+ConfirmCommandName: PConfirm
 DefaultMessages:
   NoPointsMessage: "You don't have enough points to run this command"
   NoPermissionMessage: "You don't have the permission to run this command"
   WrongArgsMessage: "Wrong usage"
   SuccessMessage: "You have payed to run this cmd"
+  NoUnconfirmCommands: 'These is no command need to be confirmed.'
 PointsCommands:
 #  Command1:
 #    Points: 666

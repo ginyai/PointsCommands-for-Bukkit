@@ -18,6 +18,7 @@ public class Config {
     private Plugin plugin;
     private Map<String,PluginCommand> iCommands;
     private FileConfiguration fileConfiguration;
+    private PluginCommand confirmCommand;
     public Config(Plugin plugin) {
         this.plugin = plugin;
         iCommands = new HashMap<>();
@@ -42,6 +43,9 @@ public class Config {
                 if(fileConfiguration.getStringList("PointsCommands."+name+".aliases")!=null)
                     command.setAliases(fileConfiguration.getStringList("PointsCommands."+name+".aliases"));
                 tempMap.put(name,command);
+            }
+            if (confirmCommand==null||(!confirmCommand.getName().equalsIgnoreCase(fileConfiguration.getString("ConfirmCommandName")))){
+                confirmCommand = (PluginCommand) constructor.newInstance(new Object[]{fileConfiguration.getString("ConfirmCommandName"), plugin});
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,5 +79,17 @@ public class Config {
 
     public String getCommandPermission(String name) {
         return fileConfiguration.getString("PointsCommands."+name+".Permission","");
+    }
+
+    public boolean isConfirmCommands() {
+        return fileConfiguration.getBoolean("ConfirmCommands");
+    }
+
+    public PluginCommand getConfirmCommand(){
+        return  this.confirmCommand;
+    }
+
+    public int getConfirmTime() {
+        return fileConfiguration.getInt("ConfirmTime");
     }
 }
